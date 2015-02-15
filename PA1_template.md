@@ -1,7 +1,8 @@
 "Reproducible Research: Peer Assessment 1"
 =============================================================================================================
 
-```{r}
+
+```r
   ## Library Inclusion  
   suppressPackageStartupMessages(library(tidyr))
   suppressPackageStartupMessages(library(reshape2))
@@ -23,7 +24,8 @@
 
 ### Loading and preprocessing the data
 
-```{r}
+
+```r
   ## Reading data from file "activity.csv" and creating two dataset one with and another without NAs 
   rawdataNA<-read.csv("activity.csv",sep=",",header=TRUE)
   rawdata<-rawdataNA[!is.na(rawdataNA$steps),]
@@ -31,42 +33,75 @@
 
 ### What is mean total number of steps taken per day?
 
-```{r}
+
+```r
   ## Calculating total number of steps per day excluding NAs
   sqlstr<-'select sum(steps) datesteps, date from rawdata where steps<>"NA" group by date  '
   q1data<- sqldf(sqlstr)
   
   ## Histogram for number of steps per days excluding NAs
   hist(as.numeric(as.vector(q1data$datesteps)),col='red',xlab="Steps Per day",main="Steps per day excluding NAs")
+```
 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
+
+```r
    ## Mean of total number of steps per day excluding NAs
   mean(q1data$datesteps)
-  
+```
+
+```
+## [1] 10766.19
+```
+
+```r
   ## Median of total number of steps per day excluding NAs
   median(q1data$datesteps)
 ```
 
+```
+## [1] 10765
+```
+
 ### What is the average daily activity pattern?
 
-```{r}
+
+```r
   ## Finding avrage steps for intervals excluding NAs
   sqlstrint <-'select avg(steps) intervalsteps,interval from rawdata where steps<>"NA" group by interval'
   q2data<-sqldf(sqlstrint)
   with(q2data,plot(as.vector(q2data$interval),as.vector(q2data$intervalsteps),type="l",xlab="Interval",ylab="Average Steps",col="blue"))
   title(main=list("Average Steps across all interval",col = "red", font = 3))
+```
+
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
+
+```r
   #text(x=as.vector(q2data$interval),y=as.vector(q2data$intervalsteps))
   
   ## Finding interval with highest avarage Steps (excluding NAs)
   sqlstrhighint <-'select max(intervalsteps) MaxAvgSteps,interval from q2data'
   sqldf(sqlstrhighint)
-  
+```
+
+```
+##   MaxAvgSteps interval
+## 1    206.1698      835
+```
+
+```r
   ## Finding Count of NAs in the original dataset
   sum(is.na(rawdataNA$steps))
 ```
 
+```
+## [1] 2304
+```
+
 ### Imputing missing values
 
-```{r}
+
+```r
   ## Replacing NAs with average steps per interval 
   dataNA<-rawdataNA[is.na(rawdataNA$steps),]
   newdata<-merge(dataNA[,c("interval","date")],q2data,by="interval")
@@ -79,17 +114,32 @@
   
   ## Histogram for number of steps per days excluding NAs
   hist(as.numeric(as.vector(q3data$datesteps)),col='red',xlab="Steps Per day",main="Steps per day Replacing NAs with avarage stpes per interval")
-  
+```
+
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
+
+```r
   ## Mean of total number of steps per day after replacing NAs
   mean(q3data$datesteps)
-  
+```
+
+```
+## [1] 10766.19
+```
+
+```r
   ## Median of total number of steps per day after replacing NAs
   median(q3data$datesteps)
 ```
 
+```
+## [1] 10766.19
+```
+
 ### Are there differences in activity patterns between weekdays and weekends?
 
-```{r}
+
+```r
   ## Determining Weekdays or Weekend and subsequent assignmentto a new variable
  
   finaldata = within(finaldata, {
@@ -101,3 +151,5 @@
   finalset<-sqldf(finalsql)
   xyplot(intervalsteps~interval|WkndInd,finalset,type="l",ylab="Number of Steps",xlab="Interval")
 ```
+
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
